@@ -1,6 +1,6 @@
 "use client"
 
-import { addConsumption } from "@/app/actions/consption"
+import { addConsumption } from "@/app/actions/consumption"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
