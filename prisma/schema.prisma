@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+
+  role      Role
+  status    UserStatus @default(PENDING)
+
+  teacherId String?   // solo para alumnos
+  teacher   User?     @relation("StudentTeacher", fields: [teacherId], references: [id])
+  students  User[]    @relation("StudentTeacher")
+
+  venues Venue[]
+  taughtEvents Event[] @relation("EventTeacher")
+
+  attendances Attendance[]
+  consumptions Consumption[]
+
+  createdAt DateTime @default(now())
+}
+
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+
+enum Role {
+  ADMIN
+  TEACHER
+  VENUE_OWNER
+  STUDENT
+}
+
+
+enum AttendanceType {
+  ENTRY
+  EXIT
+}
+
+
+
+model Venue {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  events Event[]
+}
+
+
+model Event {
+  id        String   @id @default(uuid())
+  name      String
+  date      DateTime
+
+  venueId   String
+  venue     Venue    @relation(fields: [venueId], references: [id])
+
+  teacherId String
+  teacher   User     @relation("EventTeacher", fields: [teacherId], references: [id])
+
+  hasMinConsumption Boolean @default(false)
+  minConsumption Float @default(0)
+
+  createdAt DateTime @default(now())
+
+  attendances Attendance[]
+  consumptions Consumption[]
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+
+  type      AttendanceType
+  createdAt DateTime @default(now())
+}
+
+
+model Consumption {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+
+  amount    Float
+
+  createdAt DateTime @default(now())
+}

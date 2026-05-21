@@ -4,9 +4,12 @@ import { useState } from "react"
 import { Scanner } from "@yudiel/react-qr-scanner"
 import ScanFeedback from "@/components/animations/ScanFeedback"
 import { useSound } from "@/components/hooks/useSound"
+import { parseQR } from "@/lib/qr/parseQR"
+import { registerScan } from "@/app/actions/attendance"
 
 export default function QRScanner() {
   const [success, setSuccess] = useState<boolean | null>(null)
+  const [message, setMessage] = useState<string>("") 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
 
   const { playSuccess, playError } = useSound()
@@ -17,9 +20,8 @@ export default function QRScanner() {
       {/* 📷 SCANNER */}
       <Scanner
         formats={["qr_code"]}
-        onScan={(detected) => {
+        onScan={async (detected) => {
 
-          // 🛑 BLOQUEAR multi-scan
           if (success !== null || isProcessing) return
 
           if (detected.length > 0) {
@@ -27,28 +29,40 @@ export default function QRScanner() {
 
             setIsProcessing(true)
 
-            const isValid = text.includes("EVENT")
+            // 🔥 PARSEAR QR
+            const parsed = parseQR(text)
 
-            // 📳 VIBRACIÓN DIFERENCIADA
+            // 📳 vibración
             navigator.vibrate?.(
-              isValid ? 100 : [100, 50, 100] // error vibra doble
+              parsed ? 100 : [100, 50, 100]
             )
 
-            setTimeout(() => {
-              setSuccess(isValid)
+            setTimeout(async () => {
 
-              // 🔊 SONIDO
-              if (isValid) {
-                playSuccess()
-              } else {
+              if (!parsed) {
+                setSuccess(false)
+                setMessage("QR inválido ❌")
                 playError()
+              } else {
+
+                // 🔥 LLAMADA REAL A BD
+                const result = await registerScan(parsed)
+
+                setSuccess(result.success)
+                setMessage(result.message)
+
+                if (result.success) {
+                  playSuccess()
+                } else {
+                  playError()
+                }
               }
 
-              // 🔁 RESET automática
               setTimeout(() => {
                 setSuccess(null)
+                setMessage("")
                 setIsProcessing(false)
-              }, 2000)
+              }, 2500)
 
             }, 300)
           }
@@ -60,7 +74,6 @@ export default function QRScanner() {
 
         <div className="relative w-64 h-64">
 
-          {/* Marco */}
           <div className="
             absolute inset-0
             border-4 border-neon-pink
@@ -68,7 +81,6 @@ export default function QRScanner() {
             animate-glow
           " />
 
-          {/* Línea scan */}
           <div className="
             absolute w-full h-[2px]
             bg-neon-pink
@@ -78,27 +90,20 @@ export default function QRScanner() {
         </div>
       </div>
 
-      {/* 🚫 BLOQUEO VISUAL PRO (mientras valida) */}
+      {/* 🚫 BLOQUEO VISUAL */}
       {isProcessing && success === null && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-
           <div className="flex flex-col items-center gap-3">
-
             <div className="w-10 h-10 border-4 border-neon-pink border-t-transparent rounded-full animate-spin" />
-
-            <p className="text-white text-sm">
-              Validando...
-            </p>
-
+            <p className="text-white text-sm">Validando...</p>
           </div>
-
         </div>
       )}
 
-      {/* ✅ / ❌ RESULTADO */}
+      {/* ✅ RESULTADO */}
       {success !== null && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <ScanFeedback success={success} />
+          <ScanFeedback success={success} message={message} />
         </div>
       )}
 
