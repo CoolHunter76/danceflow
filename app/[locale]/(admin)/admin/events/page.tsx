@@ -1,8 +1,19 @@
-import { getEvents } from "@/app/actions/events"
+export const dynamic = "force-dynamic"
+
+import { prisma } from "@/lib/prisma"
 import EventList from "@/components/admin/EventList"
 
 export default async function Page() {
-  const events = await getEvents()
+
+  const events = await prisma.event.findMany({
+    include: {
+      venue: true,
+      teacher: true,
+    },
+    orderBy: {
+      date: "asc",
+    },
+  })
 
   return (
     <div className="p-6 space-y-6">

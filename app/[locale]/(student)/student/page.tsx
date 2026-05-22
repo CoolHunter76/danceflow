@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import PageTransition from "@/components/animations/PageTransition"
 import NeonCard from "@/components/ui/neon-card"
 import NeonButton from "@/components/ui/neon-button"
