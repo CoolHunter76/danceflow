@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { prisma } from "@/lib/prisma"
 import ConsumptionList from "@/components/admin/ConsumptionList"
 import { User, AttendanceType } from "@prisma/client"
