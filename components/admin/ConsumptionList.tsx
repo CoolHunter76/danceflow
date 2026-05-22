@@ -13,7 +13,7 @@ type User = {
 type Props = {
   users: User[]
   eventId: string
-  minConsumption: number ✅ // 🔥 AQUÍ ESTABA EL ERROR
+  minConsumption: number 
 }
 
 export default function ConsumptionList({
