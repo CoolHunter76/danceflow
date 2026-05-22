@@ -9,7 +9,7 @@ export default async function Page({
 }) {
   const { eventId } = params
 
-  // Obtener evento
+  // Evento
   const event = await prisma.event.findUnique({
     where: { id: eventId },
   })
@@ -18,7 +18,7 @@ export default async function Page({
     return <div>Evento no encontrado</div>
   }
 
-  // Obtener historial de asistencia
+  // Asistencias
   const attendances = await prisma.attendance.findMany({
     where: { eventId },
     include: { user: true },
@@ -37,12 +37,11 @@ export default async function Page({
     })
   })
 
-  // Usuarios dentro del evento
   const usersInside = Array.from(userLastStatus.values())
     .filter((u) => u.type === "ENTRY")
     .map((u) => u.user)
 
-  // Obtener consumos por usuario
+  // Consumiciones
   const consumptions = await prisma.consumption.groupBy({
     by: ["userId"],
     where: { eventId },
@@ -57,7 +56,6 @@ export default async function Page({
     totalsMap.set(c.userId, c._sum.amount || 0)
   })
 
-  // Construcción final compatible con el componente
   const usersWithTotal = usersInside.map((user) => ({
     id: user.id,
     name: user.name,
