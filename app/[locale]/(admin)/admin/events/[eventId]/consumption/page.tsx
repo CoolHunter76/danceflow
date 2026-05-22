@@ -18,7 +18,7 @@ export default async function Page({
     return <div>Evento no encontrado</div>
   }
 
-  // Obtener asistencias
+  // Obtener historial de asistencia
   const attendances = await prisma.attendance.findMany({
     where: { eventId },
     include: { user: true },
@@ -37,12 +37,12 @@ export default async function Page({
     })
   })
 
-  // Filtrar usuarios dentro del evento
+  // Filtrar usuarios que están dentro del evento
   const usersInside = Array.from(userLastStatus.values())
     .filter((u) => u.type === "ENTRY")
     .map((u) => u.user)
 
-  // Obtener consumo acumulado
+  // Obtener consumos agrupados
   const consumptions = await prisma.consumption.groupBy({
     by: ["userId"],
     where: { eventId },
