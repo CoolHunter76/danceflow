@@ -7,7 +7,14 @@ import { useSound } from "@/components/hooks/useSound"
 import { parseQR } from "@/lib/qr/parseQR"
 import { registerScan } from "@/app/actions/attendance"
 
-export default function QRScanner() {
+type Props = {
+  currentUser: {
+    id: string
+  }
+}
+
+
+export default function QRScanner({ currentUser }: Props) {
   const [success, setSuccess] = useState<boolean | null>(null)
   const [message, setMessage] = useState<string>("") 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
@@ -45,9 +52,10 @@ export default function QRScanner() {
                 playError()
               } else {
 
-                // 🔥 LLAMADA REAL A BD
-                const result = await registerScan(parsed)
-
+              const result = await registerScan({
+              ...parsed,
+              scannerUserId: currentUser.id
+              })
                 setSuccess(result.success)
                 setMessage(result.message)
 
