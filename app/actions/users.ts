@@ -1,15 +1,28 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { Role } from "@prisma/client" 
+import bcrypt from "bcrypt"
+import { Role } from "@prisma/client"
 
-export async function createUser(data: {
+type CreateUserInput = {
   name: string
   email: string
+  password: string
   role: Role
-}) {
+  teacherId?: string | null
+}
+
+export async function createUser(input: CreateUserInput) {
+  const hashedPassword = await bcrypt.hash(input.password, 10)
+
   return prisma.user.create({
-    data,
+    data: {
+      name: input.name,
+      email: input.email,
+      password: hashedPassword,
+      role: input.role,
+      teacherId: input.teacherId ?? null,
+    },
   })
 }
 
@@ -18,13 +31,6 @@ export async function getUsers() {
     orderBy: {
       createdAt: "desc",
     },
-  })
-}
-
-export async function updateUserRole(userId: string, role: Role) {
-  return prisma.user.update({
-    where: { id: userId },
-    data: { role }, 
   })
 }
 
