@@ -39,3 +39,10 @@ export async function deleteUser(userId: string) {
     where: { id: userId },
   })
 }
+
+export async function updateUserRole(userId: string, role: Role) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { role },
+  })
+}
